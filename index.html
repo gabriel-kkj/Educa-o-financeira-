@@ -1,0 +1,123 @@
+<!DOCTYPE html><html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>FinSmart Pro</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #1e3c72, #2a5298);
+      color: white;
+    }.container {
+  max-width: 400px;
+  margin: 40px auto;
+  background: rgba(255,255,255,0.1);
+  padding: 20px;
+  border-radius: 15px;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+}
+
+h2 {
+  text-align: center;
+}
+
+input {
+  width: 100%;
+  padding: 10px;
+  margin: 10px 0;
+  border-radius: 8px;
+  border: none;
+}
+
+button {
+  width: 100%;
+  padding: 12px;
+  border: none;
+  border-radius: 8px;
+  background: #00c9a7;
+  color: white;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+button:hover {
+  background: #00a78e;
+}
+
+.resultado {
+  margin-top: 20px;
+}
+
+canvas {
+  margin-top: 20px;
+}
+
+.dica {
+  margin-top: 10px;
+  font-weight: bold;
+}
+
+  </style>
+</head>
+<body><div class="container">
+  <h2>💰 FinSmart Pro</h2>
+  <p style="text-align:center;">Planejamento financeiro inteligente</p>  <input type="number" id="salario" placeholder="Seu salário (R$)">
+  <input type="number" id="gastos" placeholder="Seus gastos totais (R$)"><button onclick="calcular()">Analisar Finanças</button>
+
+  <div class="resultado" id="resultado"></div>
+  <canvas id="grafico"></canvas>
+</div><script>
+let chart;
+
+function calcular() {
+  let salario = parseFloat(document.getElementById('salario').value);
+  let gastos = parseFloat(document.getElementById('gastos').value);
+
+  if (isNaN(salario) || isNaN(gastos)) {
+    alert('Preencha todos os campos!');
+    return;
+  }
+
+  let saldo = salario - gastos;
+  let necessidades = salario * 0.5;
+  let lazer = salario * 0.3;
+  let investimentos = salario * 0.2;
+
+  let dica = '';
+
+  if (gastos > salario) {
+    dica = '⚠️ Você está gastando mais do que ganha!';
+  } else if (gastos > necessidades) {
+    dica = '⚠️ Seus gastos estão altos, tente reduzir.';
+  } else {
+    dica = '✅ Ótimo controle financeiro! Continue assim.';
+  }
+
+  document.getElementById('resultado').innerHTML = `
+    <p><strong>Saldo:</strong> R$ ${saldo.toFixed(2)}</p>
+    <p>Necessidades (50%): R$ ${necessidades.toFixed(2)}</p>
+    <p>Lazer (30%): R$ ${lazer.toFixed(2)}</p>
+    <p>Investimentos (20%): R$ ${investimentos.toFixed(2)}</p>
+    <p class="dica">${dica}</p>
+  `;
+
+  if (chart) {
+    chart.destroy();
+  }
+
+  const ctx = document.getElementById('grafico').getContext('2d');
+  chart = new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      labels: ['Necessidades', 'Lazer', 'Investimentos'],
+      datasets: [{
+        data: [necessidades, lazer, investimentos]
+      }]
+    }
+  });
+}
+</script></body>
+</html>
