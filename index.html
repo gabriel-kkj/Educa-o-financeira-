@@ -1,121 +1,99 @@
 <!DOCTYPE html><html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <title>FinSmart Pro</title>
+  <title>FinControl</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
-    body {
-      margin: 0;
-      font-family: 'Segoe UI', sans-serif;
-      background: linear-gradient(135deg, #1e3c72, #2a5298);
-      color: white;
-    }.container {
-  max-width: 400px;
-  margin: 40px auto;
-  background: rgba(255,255,255,0.1);
-  padding: 20px;
-  border-radius: 15px;
-  backdrop-filter: blur(10px);
-  box-shadow: 0 10px 25px rgba(0,0,0,0.3);
-}
-
-h2 {
-  text-align: center;
-}
-
-input {
-  width: 100%;
-  padding: 10px;
-  margin: 10px 0;
-  border-radius: 8px;
-  border: none;
-}
-
-button {
-  width: 100%;
-  padding: 12px;
-  border: none;
-  border-radius: 8px;
-  background: #00c9a7;
-  color: white;
-  font-size: 16px;
-  cursor: pointer;
-}
-
-button:hover {
-  background: #00a78e;
-}
-
-.resultado {
-  margin-top: 20px;
-}
-
-canvas {
-  margin-top: 20px;
-}
-
-.dica {
-  margin-top: 10px;
-  font-weight: bold;
-}
-
+    body { margin:0; font-family: Arial, sans-serif; background:#f5f5f5; color:#000; }
+    .container { max-width:480px; margin:40px auto; background:#fff; padding:25px; border-radius:12px; box-shadow:0 5px 15px rgba(0,0,0,0.1);}    
+    h2 { text-align:center; margin-bottom:5px; }
+    p.subtitle { text-align:center; color:#555; font-size:14px; }
+    h4 { margin-top:20px; margin-bottom:5px; }
+    input { width:100%; padding:10px; margin:6px 0; border-radius:8px; border:1px solid #ccc; }
+    input::placeholder { color:#777; }
+    button { width:100%; padding:12px; margin-top:15px; border:none; border-radius:10px; background:#007bff; color:#fff; font-size:16px; font-weight:bold; cursor:pointer; }
+    button:hover { background:#0056b3; }
+    .resultado { margin-top:20px; background:#f0f0f0; padding:15px; border-radius:10px; }
+    .dica { margin-top:10px; font-weight:bold; }
+    .positivo { color:green; }
+    .negativo { color:red; }
+    .neutro { color:orange; }
+    ul { margin-top:10px; padding-left:18px; }
   </style>
 </head>
 <body><div class="container">
-  <h2>💰 FinSmart Pro</h2>
-  <p style="text-align:center;">Planejamento financeiro inteligente</p>  <input type="number" id="salario" placeholder="Seu salário (R$)">
-  <input type="number" id="gastos" placeholder="Seus gastos totais (R$)"><button onclick="calcular()">Analisar Finanças</button>
+  <h2>FinControl</h2>
+  <p class="subtitle">Gestão financeira simples e inteligente</p>  <input type="number" id="salario" placeholder="Seu salário (R$)">  <h4>Gastos Essenciais</h4>
+  <input type="number" id="aluguel" placeholder="Aluguel">
+  <input type="number" id="agua" placeholder="Água">
+  <input type="number" id="energia" placeholder="Energia">
+  <input type="number" id="mercado" placeholder="Supermercado">
+  <input type="number" id="transporte" placeholder="Transporte">  <h4>Lazer</h4>
+  <input type="number" id="lazer" placeholder="Lazer"><button onclick="calcular()">Analisar Finanças</button>
 
   <div class="resultado" id="resultado"></div>
   <canvas id="grafico"></canvas>
 </div><script>
 let chart;
+function pegarValor(id){ return parseFloat(document.getElementById(id).value)||0; }
+function calcular(){
+  let salario=pegarValor('salario');
+  let aluguel=pegarValor('aluguel');
+  let agua=pegarValor('agua');
+  let energia=pegarValor('energia');
+  let mercado=pegarValor('mercado');
+  let transporte=pegarValor('transporte');
+  let lazer=pegarValor('lazer');
 
-function calcular() {
-  let salario = parseFloat(document.getElementById('salario').value);
-  let gastos = parseFloat(document.getElementById('gastos').value);
+  if(salario<=0){ alert('Digite seu salário!'); return; }
 
-  if (isNaN(salario) || isNaN(gastos)) {
-    alert('Preencha todos os campos!');
-    return;
-  }
+  let essenciais=aluguel+agua+energia+mercado+transporte;
+  let total=essenciais+lazer;
+  let saldo=salario-total;
 
-  let saldo = salario - gastos;
-  let necessidades = salario * 0.5;
-  let lazer = salario * 0.3;
-  let investimentos = salario * 0.2;
+  let limiteLazer=salario*0.3;
+  let investimentoIdeal=salario*0.2;
+  let investimentoReal = Math.max(0, Math.min(saldo, investimentoIdeal));
 
-  let dica = '';
+  let dica=''; let classe='neutro';
+  let dicasExtras=[];
 
-  if (gastos > salario) {
-    dica = '⚠️ Você está gastando mais do que ganha!';
-  } else if (gastos > necessidades) {
-    dica = '⚠️ Seus gastos estão altos, tente reduzir.';
+  if(total>salario){
+    dica='Você está gastando mais do que ganha.';
+    classe='negativo';
+    dicasExtras.push('Revise gastos não essenciais.');
+    dicasExtras.push('Evite compras parceladas no momento.');
+  } else if(saldo < investimentoIdeal){
+    dica='Você está com pouco dinheiro sobrando para investir.';
+    classe='neutro';
+    dicasExtras.push('Tente reduzir gastos com lazer ou despesas variáveis.');
+    dicasExtras.push('Busque aumentar sua renda (extra ou freelance).');
   } else {
-    dica = '✅ Ótimo controle financeiro! Continue assim.';
+    dica='Você está com um bom controle financeiro.';
+    classe='positivo';
+    dicasExtras.push('Considere criar uma reserva de emergência.');
+    dicasExtras.push('Pesquise investimentos como poupança ou renda fixa.');
   }
 
-  document.getElementById('resultado').innerHTML = `
+  document.getElementById('resultado').innerHTML=`
     <p><strong>Saldo:</strong> R$ ${saldo.toFixed(2)}</p>
-    <p>Necessidades (50%): R$ ${necessidades.toFixed(2)}</p>
-    <p>Lazer (30%): R$ ${lazer.toFixed(2)}</p>
-    <p>Investimentos (20%): R$ ${investimentos.toFixed(2)}</p>
-    <p class="dica">${dica}</p>
+    <p>Gastos Essenciais: R$ ${essenciais.toFixed(2)}</p>
+    <p>Lazer: R$ ${lazer.toFixed(2)}</p>
+    <p>Investimento sugerido: R$ ${investimentoReal.toFixed(2)}</p>
+    <p class="dica ${classe}">${dica}</p>
+    <ul>
+      ${dicasExtras.map(d => `<li>${d}</li>`).join('')}
+    </ul>
   `;
 
-  if (chart) {
-    chart.destroy();
-  }
-
-  const ctx = document.getElementById('grafico').getContext('2d');
-  chart = new Chart(ctx, {
-    type: 'doughnut',
-    data: {
-      labels: ['Necessidades', 'Lazer', 'Investimentos'],
-      datasets: [{
-        data: [necessidades, lazer, investimentos]
-      }]
+  if(chart) chart.destroy();
+  const ctx=document.getElementById('grafico').getContext('2d');
+  chart=new Chart(ctx,{ 
+    type:'doughnut', 
+    data:{ 
+      labels:['Essenciais','Lazer','Investimentos'], 
+      datasets:[{ data:[essenciais,lazer,investimentoReal]}] 
     }
   });
 }
